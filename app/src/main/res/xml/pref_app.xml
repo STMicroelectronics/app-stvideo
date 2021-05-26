@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/pref_player_category"
+        android:key="@string/pref_player_category_label">
+
+        <CheckBoxPreference
+            android:key="@string/pref_player_label"
+            android:title="@string/pref_player"
+            android:summaryOn="@string/pref_player_summary_on"
+            android:summaryOff="@string/pref_player_summary_off"
+            android:defaultValue="true"/>
+
+        <CheckBoxPreference
+            android:key="@string/pref_rescale_label"
+            android:title="@string/pref_rescale"
+            android:summaryOn="@string/pref_rescale_summary_on"
+            android:summaryOff="@string/pref_rescale_summary_off"
+            android:defaultValue="false"/>
+
+        <ListPreference
+            android:key="@string/pref_orientation_label"
+            android:title="@string/pref_orientation"
+            android:entries="@array/orientation_entries"
+            android:entryValues="@array/orientation_values"
+            android:summary="@string/portrait_entry"
+            android:defaultValue="@string/portrait_value"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

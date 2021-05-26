@@ -1,0 +1,54 @@
+<resources>
+    <string name="app_name">ST Video</string>
+
+    <string name="no_video_msg">No video available in Movies directory on this device</string>
+
+    <string name="video_thumb_content_desc">video thumbnail</string>
+    <string name="video_play_content_desc">press to play</string>
+
+    <string name="menu_player_settings">Player Selection</string>
+
+    <string name="button_usb">Scan USB</string>
+    <string name="play_pane_title">Video</string>
+
+    <string name="settings_content_desc">Open Settings</string>
+    <string name="usb_content_desc">Scan USB</string>
+
+    <!-- Settings -->
+    <string name="pref_player_category">Player Selection</string>
+    <string name="pref_player_category_label">sel_player_cat</string>
+
+    <string name="pref_player">Select Player</string>
+    <string name="pref_player_label">sel_player</string>
+    <string name="pref_player_summary_on">ExoPlayer used</string>
+    <string name="pref_player_summary_off">MediaPlayer used</string>
+
+    <string name="pref_rescale">Select Scaling</string>
+    <string name="pref_rescale_label">sel_rescale</string>
+    <string name="pref_rescale_summary_on">Full screen</string>
+    <string name="pref_rescale_summary_off">Video size</string>
+
+    <string name="pref_orientation">Select Orientation</string>
+    <string name="pref_orientation_label">sel_orientation</string>
+
+    <string name="portrait_entry">Video in portrait</string>
+    <string name="landscape_entry">Video in landscape</string>
+    <string name="reverseLandscape_entry">Video in reversed landscape</string>
+
+    <string-array name="orientation_entries">
+        <item>Video in portrait</item>
+        <item>Video in landscape</item>
+        <item>Video in reversed landscape</item>
+    </string-array>
+
+    <string name="portrait_value">portrait</string>
+    <string name="landscape_value">landscape</string>
+    <string name="reverseLandscape_value">reverseLandscape</string>
+
+    <string-array name="orientation_values">
+        <item>@string/portrait_value</item>
+        <item>@string/landscape_value</item>
+        <item>@string/reverseLandscape_value</item>
+    </string-array>
+
+</resources>

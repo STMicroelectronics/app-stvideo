@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground"
+    android:orientation="vertical"
+    tools:context="com.stmicroelectronics.stvideo.MainActivity">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/play_title"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/text_title_height"
+        android:layout_marginStart="@dimen/horizontal_margin"
+        android:layout_marginTop="@dimen/vertical_margin"
+        android:layout_marginEnd="@dimen/horizontal_margin"
+        android:layout_marginBottom="@dimen/vertical_margin"
+        app:cardBackgroundColor="@color/colorPrimaryDark"
+        app:cardCornerRadius="4dp"
+        app:cardElevation="0dp">
+
+        <ImageButton
+            android:id="@+id/button_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:layout_marginStart="@dimen/horizontal_margin_half"
+            android:layout_marginTop="@dimen/vertical_margin_half"
+            android:layout_marginBottom="@dimen/vertical_margin_half"
+            android:background="@drawable/custom_btn_grey"
+            android:contentDescription="@string/settings_content_desc"
+            android:onClick="openSettings"
+            android:scaleType="centerInside"
+            android:src="@drawable/logo_settings_black_48dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/play_pane_title"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/button_usb"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:layout_marginTop="@dimen/vertical_margin_half"
+            android:layout_marginEnd="@dimen/horizontal_margin_half"
+            android:layout_marginBottom="@dimen/vertical_margin_half"
+            android:background="@drawable/custom_btn_grey"
+            android:contentDescription="@string/usb_content_desc"
+            android:onClick="scanExternal"
+            android:scaleType="centerInside"
+            android:src="@drawable/logo_usb_black_48dp"
+            android:visibility="invisible" />
+
+    </androidx.cardview.widget.CardView>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/horizontal_margin"
+        android:layout_marginEnd="@dimen/horizontal_margin">
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_refresh_video"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/video_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fadeScrollbars="true"
+                android:scrollbars="vertical">
+
+            </androidx.recyclerview.widget.RecyclerView>
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <TextView
+            android:id="@+id/video_msg"
+            style="@style/IconTitleTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/no_video_msg"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+</LinearLayout>

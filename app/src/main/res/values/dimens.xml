@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="horizontal_margin">16dp</dimen>
+    <dimen name="vertical_margin">16dp</dimen>
+
+    <dimen name="horizontal_margin_half">8dp</dimen>
+    <dimen name="vertical_margin_half">8dp</dimen>
+
+    <dimen name="horizontal_margin_quarter">4dp</dimen>
+    <dimen name="vertical_margin_quarter">4dp</dimen>
+
+    <dimen name="video_width">228dp</dimen>
+    <dimen name="video_height">128dp</dimen>
+
+    <dimen name="text_title_height">48dp</dimen>
+    <dimen name="button_title_size">40dp</dimen>
+
+</resources>
