@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.exoplayer2.MediaItem;
@@ -22,7 +23,7 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
-import com.google.android.exoplayer2.video.VideoListener;
+import com.google.android.exoplayer2.video.VideoSize;
 
 import timber.log.Timber;
 
@@ -40,6 +41,7 @@ public class ExoPlayerActivity extends AppCompatActivity {
     private SimpleExoPlayer mPlayer;
     private final boolean mPlayWhenReady = true;
     private boolean mVideoState = false;
+    private boolean mFullScreen = false;
 
     PlayerView mPlayerView;
 
@@ -58,7 +60,9 @@ public class ExoPlayerActivity extends AppCompatActivity {
                     WindowInsetsController wic = v.getWindowInsetsController();
                     wic.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
                     wic.hide(WindowInsets.Type.statusBars());
-                    wic.hide(WindowInsets.Type.navigationBars());
+                    if (mFullScreen) {
+                        wic.hide(WindowInsets.Type.navigationBars());
+                    }
                 }
 
                 @Override
@@ -67,37 +71,36 @@ public class ExoPlayerActivity extends AppCompatActivity {
                 }
             });
         } else {
-            View decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            initSystemUiVisibility();
         }
         Intent intent = getIntent();
         if (intent != null) {
             String videoOrientationStr = intent.getStringExtra(VIDEO_ORIENTATION_EXTRA);
             if ((videoOrientationStr != null) && (videoOrientationStr.length() > 0)) {
                 if (videoOrientationStr.equals(getString(R.string.landscape_value))) {
+                    Timber.d("SCREEN ORIENTATION LANDSCAPE");
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 } else if (videoOrientationStr.equals(getString(R.string.reverseLandscape_value))) {
+                    Timber.d("SCREEN ORIENTATION REVERSE LANDSCAPE");
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
                 }
             }
 
-            boolean fullScreen = intent.getBooleanExtra(VIDEO_FULLSCREEN_EXTRA,false);
+            mFullScreen = intent.getBooleanExtra(VIDEO_FULLSCREEN_EXTRA,false);
+            Timber.d("FULL SCREEN %s", mFullScreen ? "ON" : "OFF");
 
             Uri videoUri = intent.getParcelableExtra(VIDEO_URI_EXTRA);
             if (videoUri != null) {
+                Timber.d("VIDEO URI = %s", videoUri.toString());
 
                 if (mPlayer == null) {
                     mPlayer = initPlayer();
                 }
 
-                mPlayer.addListener(new Player.EventListener() {
-
+                mPlayer.addListener(new Player.Listener() {
                     @Override
-                    public void onPlaybackStateChanged(int state) {
-                        switch (state) {
+                    public void onPlaybackStateChanged(int playbackState) {
+                        switch (playbackState) {
                             case Player.STATE_ENDED:
                                 Timber.d("Video Playback END");
                                 mVideoState = false;
@@ -118,21 +121,21 @@ public class ExoPlayerActivity extends AppCompatActivity {
                                 break;
                         }
                     }
-                });
 
-                if (! fullScreen) {
-                    mPlayer.addVideoListener(new VideoListener() {
-                        @Override
-                        public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
-                            if ((Math.min(width, mPlayerView.getWidth()) == width) && (Math.min(height, mPlayerView.getHeight()) == height)) {
-                                ViewGroup.LayoutParams p = mPlayerView.getLayoutParams();
-                                p.width = width;
-                                p.height = height;
-                                mPlayerView.setLayoutParams(p);
+                    @Override
+                    public void onVideoSizeChanged(@NonNull VideoSize videoSize) {
+                        if (!mFullScreen) {
+                            ViewGroup.LayoutParams p = mPlayerView.getLayoutParams();
+                            if (Math.min(videoSize.width, mPlayerView.getMeasuredWidth()) == videoSize.width) {
+                                p.width = videoSize.width;
                             }
+                            if (Math.min(videoSize.height, mPlayerView.getMeasuredHeight()) == videoSize.height) {
+                                p.height = videoSize.height;
+                            }
+                            mPlayerView.setLayoutParams(p);
                         }
-                    });
-                }
+                    }
+                });
 
                 mPlayerView.setUseController(true);
                 mPlayerView.requestFocus();
@@ -159,12 +162,23 @@ public class ExoPlayerActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("deprecation")
+    private void initSystemUiVisibility() {
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    }
+
     @Override
     protected void onDestroy() {
         if (mMediaSession.isActive()) {
             mMediaSession.setActive(false);
         }
+
         if (mPlayer != null) {
+            mPlayerView.setPlayer(null);
             mPlayer.release();
         }
         super.onDestroy();

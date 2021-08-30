@@ -20,22 +20,10 @@ import android.hardware.usb.UsbManager;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.os.StrictMode;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.documentfile.provider.DocumentFile;
-import androidx.preference.PreferenceManager;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AppCompatActivity;
-import android.os.Bundle;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 import android.provider.MediaStore;
@@ -43,6 +31,21 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.documentfile.provider.DocumentFile;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.stmicroelectronics.stvideo.adapter.VideoAdapter;
 import com.stmicroelectronics.stvideo.data.VideoDetails;
@@ -86,6 +89,43 @@ public class MainActivity extends AppCompatActivity implements VideoAdapter.OnCl
     private boolean mNewUSBDeviceAttached = false;
 
     ImageButton mScanUsbButton;
+
+    private final ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    mVideoAdapter.removeAllExternalItems();
+                    List<UriPermission> list1 = getContentResolver().getPersistedUriPermissions();
+                    if (! list1.isEmpty()) {
+                        for (UriPermission permission: list1){
+                            parseExternal(permission.getUri());
+                        }
+                    }
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        if (data != null) {
+                            Uri treeUri = data.getData();
+                            if (treeUri != null) {
+                                getContentResolver().takePersistableUriPermission(treeUri,
+                                        Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                                                Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                                parseExternal(treeUri);
+                                mExternalAccessGranted = true;
+                            }
+                        }
+                        mNewUSBDeviceAttached = false;
+                    }
+
+                    if (mVideoAdapter.getItemCount() > 0) {
+                        mVideoMsgView.setVisibility(View.GONE);
+                    } else {
+                        mVideoMsgView.setVisibility(View.VISIBLE);
+                    }
+                    mSwipeRefreshView.setRefreshing(false);
+                }
+            }
+    );
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 
@@ -237,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements VideoAdapter.OnCl
         if (mPrefListener == null) {
             mPrefListener = (sharedPreferences, key) -> {
                 if (key.equals(getString(R.string.pref_player_label))) {
-                    mExoPlayerUsed.set(sharedPreferences.getBoolean(key, false));
+                    mExoPlayerUsed.set(sharedPreferences.getBoolean(key, true));
                 }
                 if (key.equals(getString(R.string.pref_orientation_label))) {
                     mVideoScreenOrientation = sharedPreferences.getString(getString(R.string.pref_orientation_label),getString(R.string.portrait_value));
@@ -248,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements VideoAdapter.OnCl
             };
         }
 
-        mExoPlayerUsed.set(preferences.getBoolean(getString(R.string.pref_player_label),false));
+        mExoPlayerUsed.set(preferences.getBoolean(getString(R.string.pref_player_label),true));
         mFullScreen.set(preferences.getBoolean(getString(R.string.pref_rescale_label), false));
         mVideoScreenOrientation = preferences.getString(getString(R.string.pref_orientation_label),getString(R.string.portrait_value));
 
@@ -385,15 +425,13 @@ public class MainActivity extends AppCompatActivity implements VideoAdapter.OnCl
         return state.equals(Environment.MEDIA_MOUNTED);
     }
 
-    private final int GET_EXTERNAL_ACCESS=1;
-
     public void scanExternal(View view) {
         mSwipeRefreshView.setRefreshing(true);
         List<UriPermission> list = getContentResolver().getPersistedUriPermissions();
         if (list.isEmpty() || ! mVideoAdapter.isPermissionGranted(list) || mNewUSBDeviceAttached) {
             // At least one element in list not granted (or list empty)
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            startActivityForResult(intent, GET_EXTERNAL_ACCESS);
+            mActivityResultLauncher.launch(intent);
         } else {
             mVideoAdapter.removeAllExternalItems();
             for (UriPermission permission:list){
@@ -407,47 +445,12 @@ public class MainActivity extends AppCompatActivity implements VideoAdapter.OnCl
             }
             mSwipeRefreshView.setRefreshing(false);
         }
-
     }
 
     public void openSettings(View view) {
         Intent intent = new Intent(getApplicationContext(),SettingsActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == GET_EXTERNAL_ACCESS) {
-            mVideoAdapter.removeAllExternalItems();
-            List<UriPermission> list = getContentResolver().getPersistedUriPermissions();
-            if (! list.isEmpty()) {
-                for (UriPermission permission:list){
-                    parseExternal(permission.getUri());
-                }
-            }
-            if (resultCode == Activity.RESULT_OK) {
-                if (data != null) {
-                    Uri treeUri = data.getData();
-                    if (treeUri != null) {
-                        getContentResolver().takePersistableUriPermission(treeUri,
-                                Intent.FLAG_GRANT_READ_URI_PERMISSION |
-                                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                        parseExternal(treeUri);
-                        mExternalAccessGranted = true;
-                    }
-                }
-                mNewUSBDeviceAttached = false;
-            }
-
-            if (mVideoAdapter.getItemCount() > 0) {
-                mVideoMsgView.setVisibility(View.GONE);
-            } else {
-                mVideoMsgView.setVisibility(View.VISIBLE);
-            }
-            mSwipeRefreshView.setRefreshing(false);
-        }
     }
 
     private void parseExternal(Uri treeUri){
