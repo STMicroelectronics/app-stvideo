@@ -46,9 +46,9 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.ViewHolder>{
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         VideoDetails video = arrayList.get(position);
 
-        Drawable videoThumb = video.getVideoThumb();
+        String videoThumb = video.getVideoThumb();
         if (videoThumb != null) {
-            holder.videoThumb.setImageDrawable(videoThumb);
+           holder.videoThumb.setImageDrawable(Drawable.createFromPath(videoThumb));
         }
 
         holder.videoTitle.setText(video.getVideoName());
@@ -164,7 +164,7 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.ViewHolder>{
 
         @Override
         public void onClick(View view) {
-            int adapterPosition = getAdapterPosition();
+            int adapterPosition = getAbsoluteAdapterPosition();
 
             if (adapterPosition != RecyclerView.NO_POSITION) {
                 VideoDetails video = arrayList.get(adapterPosition);

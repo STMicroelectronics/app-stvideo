@@ -18,7 +18,7 @@ public class STVideo extends Application {
         super.onCreate();
 
         // enable if device is debuggable or if application build is debug
-        if (! Build.TYPE.equals("user") || BuildConfig.DEBUG) {
+        if (! Build.TYPE.equals("user")) {
             tree = new Timber.DebugTree();
         } else {
             tree = new Timber.Tree() {

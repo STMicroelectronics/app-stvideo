@@ -21,7 +21,7 @@ public class VideoDetails implements Parcelable {
     private int mVolume;
 
     private String mVideoName;
-    private Drawable mVideoThumb;
+    private String mVideoThumb;
     private Uri mVideoUri;
 
     private Uri mAudioUriPermission;
@@ -37,11 +37,12 @@ public class VideoDetails implements Parcelable {
         mVideoUri = in.readParcelable(Uri.class.getClassLoader());
         mAudioUriPermission = in.readParcelable(Uri.class.getClassLoader());
         mPermissionGranted = in.readByte() != 0;
-        Bitmap bitmap = (Bitmap)in.readParcelable(getClass().getClassLoader());
-        mVideoThumb = new BitmapDrawable(Resources.getSystem(),bitmap);
+        mVideoThumb = in.readString();
+        // Bitmap bitmap = in.readParcelable(getClass().getClassLoader());
+        // mVideoThumb = new BitmapDrawable(Resources.getSystem(),bitmap);
     }
 
-    public static final Creator<VideoDetails> CREATOR = new Creator<VideoDetails>() {
+    public static final Creator<VideoDetails> CREATOR = new Creator<>() {
         @Override
         public VideoDetails createFromParcel(Parcel in) {
             return new VideoDetails(in);
@@ -60,10 +61,10 @@ public class VideoDetails implements Parcelable {
         return mVideoName;
     }
 
-    public void setVideoThumb(Drawable mVideoThumb) {
+    public void setVideoThumb(String mVideoThumb) {
         this.mVideoThumb = mVideoThumb;
     }
-    public Drawable getVideoThumb() {
+    public String getVideoThumb() {
         return mVideoThumb;
     }
 
@@ -110,7 +111,8 @@ public class VideoDetails implements Parcelable {
         dest.writeParcelable(mVideoUri, flags);
         dest.writeParcelable(mAudioUriPermission, flags);
         dest.writeByte((byte) (mPermissionGranted ? 1 : 0));
-        Bitmap bitmap = (Bitmap)((BitmapDrawable) mVideoThumb).getBitmap();
-        dest.writeParcelable(bitmap, flags);
+        dest.writeString(mVideoThumb);
+        // Bitmap bitmap = ((BitmapDrawable) mVideoThumb).getBitmap();
+        // dest.writeParcelable(bitmap, flags);
     }
 }
